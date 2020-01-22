@@ -51,7 +51,7 @@
         android:text="choose style" />
 
     <Button
-        android:id="@+id/save"
+        android:id="@+id/choose_image_btn"
 
         android:layout_width="100dp"
         android:layout_height="50dp"
@@ -65,5 +65,5 @@
         android:layout_marginTop="502dp"
         android:layout_marginEnd="28dp"
         android:layout_marginRight="28dp"
-        android:text="save" />
+        android:text="from gallery" />
 </RelativeLayout>

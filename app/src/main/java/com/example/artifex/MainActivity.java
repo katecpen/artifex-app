@@ -20,9 +20,12 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_CODE = 1000;
     private static final int IMAGE_CAPTURE_CODE = 1001;
+    private static final int IMAGE_CHOOSE_CODE = 1002;
+    private static final int PERMISSION_CODE2 = 1003;
 
     Button mCaptureBtn;
     ImageView mImageView;
+    Button mChooseBtn;
 
     Uri image_uri;
 
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         mImageView = findViewById(R.id.image_view);
         mCaptureBtn = findViewById(R.id.capture_image_btn);
+        mChooseBtn = findViewById(R.id.choose_image_btn);
 
         //button click
         mCaptureBtn.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +64,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        //handle button click
+        mChooseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //check runtime permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_DENIED){
+                        //permission not granted, request it.
+                        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+                        //show popup for runtime permission
+                        requestPermissions(permissions, PERMISSION_CODE2);
+                    }
+                    else {
+                        //permission already granted
+                        pickImageFromGallery();
+                    }
+                }
+                else {
+                    //system os is less then marshmallow
+                    pickImageFromGallery();
+                }
+
+            }
+        });
+
+
+
+
     }
 
     private void openCamera() {
@@ -73,6 +106,13 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(cameraIntent, IMAGE_CAPTURE_CODE);
     }
 
+
+    private void pickImageFromGallery() {
+        //intent to pick image
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, IMAGE_CHOOSE_CODE);
+    }
     //handling permission result
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -89,6 +129,18 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Permission denied...", Toast.LENGTH_SHORT).show();
                 }
             }
+
+            case PERMISSION_CODE2:{
+                    if (grantResults.length >0 && grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED){
+                        //permission was granted
+                        pickImageFromGallery();
+                    }
+                    else {
+                        //permission was denied
+                        Toast.makeText(this, "Permission denied...!", Toast.LENGTH_SHORT).show();
+                    }
+            }
         }
     }
 
@@ -96,8 +148,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //called when image was captured from camera
-
-        if (resultCode == RESULT_OK){
+        if (resultCode == RESULT_OK && requestCode == IMAGE_CHOOSE_CODE){
+            //set image to image view
+            mImageView.setImageURI(data.getData());
+        }
+        else if (resultCode == RESULT_OK){
             //set the image captured to our ImageView
             mImageView.setImageURI(image_uri);
         }
